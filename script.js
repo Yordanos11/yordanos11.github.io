@@ -1,65 +1,120 @@
-/*=============================================================
-    Authour URI: www.binarytheme.com
-    License: Commons Attribution 3.0
+const draggable_list = document.getElementById('draggable-list');
+const check = document.getElementById('check');
 
-    http://creativecommons.org/licenses/by/3.0/
+const richestPeople = [
+  'Be a Diligent, Respectful, and Caring Steward',
+  'Create a Collaborative Project Team Environment',
+  'Effectively Engage with Stakeholders',
+  'Focus on Value',
+  'Recognize, Evaluate, and Respond to System Interactions',
+  'Demonstrate Leadership Behavior',
+  'Tailor Based on Context',
+  'Build Quality into Processes and Deliverables',
+	'Navigate Complexity',
+	'Optimize Risk Responses',
+  'Embrace Adaptability and Resiliency',
+  'Enable Change to Achieve the Envisioned Future State',
+];
 
-    100% To use For Personal And Commercial Use.
-    IN EXCHANGE JUST GIVE US CREDITS AND TELL YOUR FRIENDS ABOUT US
-   
-    ========================================================  */
+// Store listitems
+const listItems = [];
 
+let dragStartIndex;
 
-(function ($) {
-    "use strict";
-    var mainApp = {
+createList();
 
-        main_fun: function () {
-            /*====================================
-             CUSTOM LINKS SCROLLING FUNCTION 
-            ======================================*/
+// Insert list items into DOM
+function createList() {
+  [...richestPeople]
+    .map(a => ({ value: a, sort: Math.random() }))
+    .sort((a, b) => a.sort - b.sort)
+    .map(a => a.value)
+    .forEach((person, index) => {
+      const listItem = document.createElement('li');
 
-            $('nav a[href*=#]').click(function () {
-                if (location.pathname.replace(/^\//, '') == this.pathname.replace(/^\//, '')
-               && location.hostname == this.hostname) {
-                    var $target = $(this.hash);
-                    $target = $target.length && $target
-                    || $('[name=' + this.hash.slice(1) + ']');
-                    if ($target.length) {
-                        var targetOffset = $target.offset().top;
-                        $('html,body')
-                        .animate({ scrollTop: targetOffset }, 800); //set scroll speed here
-                        return false;
-                    }
-                }
-            });
-         
+      listItem.setAttribute('data-index', index);
 
-            /*====================================
-                NAV SCRIPTS
-            ======================================*/
-            $(window).bind('scroll', function () {
-                var navHeight = $(window).height() -50;
-                if ($(window).scrollTop() > navHeight) {
-                    $('nav').addClass('fixed');
-                }
-                else {
-                    $('nav').removeClass('fixed');
-                }
-            });
+      listItem.innerHTML = `
+        <span class="number">${index + 1}</span>
+        <div class="draggable" draggable="true">
+          <p class="person-name">${person}</p>
+          <i class="fas fa-grip-lines"></i>
+        </div>
+      `;
 
-        },
+      listItems.push(listItem);
 
-        initialization: function () {
-            mainApp.main_fun();
-
-        }
-
-    }
-    // Initializing ///
-
-    $(document).ready(function () {
-        mainApp.main_fun();
+      draggable_list.appendChild(listItem);
     });
 
-}(jQuery));
+  addEventListeners();
+}
+
+function dragStart() {
+  // console.log('Event: ', 'dragstart');
+  dragStartIndex = +this.closest('li').getAttribute('data-index');
+}
+
+function dragEnter() {
+  // console.log('Event: ', 'dragenter');
+  this.classList.add('over');
+}
+
+function dragLeave() {
+  // console.log('Event: ', 'dragleave');
+  this.classList.remove('over');
+}
+
+function dragOver(e) {
+  // console.log('Event: ', 'dragover');
+  e.preventDefault();
+}
+
+function dragDrop() {
+  // console.log('Event: ', 'drop');
+  const dragEndIndex = +this.getAttribute('data-index');
+  swapItems(dragStartIndex, dragEndIndex);
+
+  this.classList.remove('over');
+}
+
+// Swap list items that are drag and drop
+function swapItems(fromIndex, toIndex) {
+  const itemOne = listItems[fromIndex].querySelector('.draggable');
+  const itemTwo = listItems[toIndex].querySelector('.draggable');
+
+  listItems[fromIndex].appendChild(itemTwo);
+  listItems[toIndex].appendChild(itemOne);
+}
+
+/* Check the order of list items
+function checkOrder() {
+  listItems.forEach((listItem, index) => {
+    const personName = listItem.querySelector('.draggable').innerText.trim();
+
+    if (personName !== richestPeople[index]) {
+      listItem.classList.add('wrong');
+    } else {
+      listItem.classList.remove('wrong');
+      listItem.classList.add('right');
+    }
+  });
+}
+*/
+function addEventListeners() {
+  const draggables = document.querySelectorAll('.draggable');
+  const dragListItems = document.querySelectorAll('.draggable-list li');
+
+  draggables.forEach(draggable => {
+    draggable.addEventListener('dragstart', dragStart);
+  });
+
+  dragListItems.forEach(item => {
+    item.addEventListener('dragover', dragOver);
+    item.addEventListener('drop', dragDrop);
+    item.addEventListener('dragenter', dragEnter);
+    item.addEventListener('dragleave', dragLeave);
+  });
+}
+
+// check.addEventListener('click', checkOrder);
